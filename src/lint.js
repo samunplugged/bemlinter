@@ -140,10 +140,20 @@ function bemLintFileData(filePath, data, result, blockList, options) {
       }
       const nextNodeType = next.get(0).type;
       if (['id', 'class', 'attribute', 'pseudo_class', 'punctuation', 'function', 'space'].indexOf(nextNodeType) === -1) {
-        const selector = nodeToString(next.parent().get(0)).trim();
-        result.addError(`"${selector}" should not concatenate classes.`, filePath, moduleName, blockName, wrapper);
+        const selectors = nodeToString(next.parent().get(0)).trim().split(",");
+        for (var i=0; i < selectors.length; i++) {
+          var selector = selectors[i].trim();
+          if (isUnAllowedSelector(selector, blockName)) {
+            result.addError(`"${selector}" should not concatenate classes.`, filePath, moduleName, blockName, wrapper);
+          }
+        }
       }
     });
+  }
+  
+  function isUnAllowedSelector(selector, blockName) {
+    return (selector.indexOf('&--') === -1 && selector.indexOf('&__') === -1
+      && selector.indexOf('.' + blockName + '--') === -1 && selector.indexOf('.' + blockName + '__') === -1);
   }
 
   checkSelector();
